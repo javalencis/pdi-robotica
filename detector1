@@ -3,57 +3,36 @@ import numpy as np
 
 #función para el reconocimiento del color de la figura
 def figColor(imagenHSV):
-  # Rojo
-  rojoBajo1 = np.array([0, 100, 20], np.uint8)
-  rojoAlto1 = np.array([10, 255, 255], np.uint8)
-  rojoBajo2 = np.array([175, 100, 20], np.uint8)
-  rojoAlto2 = np.array([180, 255, 255], np.uint8)
-  # Naranja
-  naranjaBajo = np.array([11, 100, 20], np.uint8)
-  naranjaAlto = np.array([19, 255, 255], np.uint8)
+  color = 'No dectect'
   #Amarillo
   amarilloBajo = np.array([20, 100, 20], np.uint8)
   amarilloAlto = np.array([32, 255, 255], np.uint8)
   #Verde
   verdeBajo = np.array([36, 100, 20], np.uint8)
   verdeAlto = np.array([70, 255, 255], np.uint8)
-  #Violeta
-  violetaBajo = np.array([130, 100, 20], np.uint8)
-  violetaAlto = np.array([145, 255, 255], np.uint8)
-  #Rosa
-  rosaBajo = np.array([146, 100, 20], np.uint8)
-  rosaAlto = np.array([170, 255, 255], np.uint8)
+
    #Se genera una mascara con los rangos especificados para poder detectar el color
-  maskRojo1 = cv2.inRange(imagenHSV, rojoBajo1, rojoAlto1)
-  maskRojo2 = cv2.inRange(imagenHSV, rojoBajo2, rojoAlto2)
-  maskRojo = cv2.add(maskRojo1, maskRojo2)
-  maskNaranja = cv2.inRange(imagenHSV, naranjaBajo, naranjaAlto)
-  maskAmarillo = cv2.inRange(imagenHSV, amarilloBajo, amarilloAlto)
+
   maskVerde = cv2.inRange(imagenHSV, verdeBajo, verdeAlto)
-  maskVioleta = cv2.inRange(imagenHSV, violetaBajo, violetaAlto)
-  maskRosa = cv2.inRange(imagenHSV, rosaBajo, rosaAlto)
+  maskAmarillo = cv2.inRange(imagenHSV, amarilloBajo, amarilloAlto)
+
   #se define los contornos del color detectado
-  cntsRojo = cv2.findContours(maskRojo, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
-  cntsNaranja = cv2.findContours(maskNaranja, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0] 
-  cntsAmarillo = cv2.findContours(maskAmarillo, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0] 
+ 
   cntsVerde = cv2.findContours(maskVerde, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
-  cntsVioleta = cv2.findContours(maskVioleta, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
-  cntsRosa = cv2.findContours(maskRosa, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0] 
+  cntsAmarillo= cv2.findContours(maskAmarillo, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
+
 
   #se retorna el color de acuerdo al contorno generado
-  if len(cntsRojo)>0: color = 'Rojo'
-  elif len(cntsNaranja)>0: color = 'Naranja'
-  elif len(cntsAmarillo)>0: color = 'Amarillo'
+  if len(cntsAmarillo)>0: color = 'Amarillo'
   elif len(cntsVerde)>0: color = 'Verde'
-  elif len(cntsVioleta)>0: color = 'Violeta'
-  elif len(cntsRosa)>0: color = 'Rosa'
+
   return color
 
 
 #Función para reconocer la figura geometrica  
 def figName(contorno,width,height):
   #se hace una aproximacion de la cantidad de lados del contorno generado
-  epsilon = 0.01*cv2.arcLength(contorno,True)
+  epsilon = 0.02*cv2.arcLength(contorno,True)
   approx = cv2.approxPolyDP(contorno,epsilon,True) 
 
   #de acuerdo a la cantidad de lados se retorna el tipo de figura
@@ -71,10 +50,11 @@ def figName(contorno,width,height):
     namefig = 'Hexagono'
   if len(approx) > 10:
     namefig = 'Circulo'
+
   return namefig
 
 #se captura la camara externa
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 
 while True:
@@ -82,6 +62,7 @@ while True:
     ret, imagen = cap.read()  
     #ret es igual a true si se esta capturando una imagen
     if ret == True:
+        imagen=cv2.flip(imagen,1)
         #se pasa de BGR a HSV
         gray = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
         #Se aplica detección de bordes
@@ -90,7 +71,7 @@ while True:
         canny = cv2.dilate(canny,None,iterations=1)
         canny = cv2.erode(canny,None,iterations=1)
         #se encuentran los contornos 
-        cnts,_ = cv2.findContours(canny, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) 
+        cnts,_ = cv2.findContours(gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) 
         #se obtiene la imagen en hsv
         imageHSV = cv2.cvtColor(imagen, cv2.COLOR_BGR2HSV)
         #se recorre cada uno de los contornos encontrados
@@ -110,10 +91,13 @@ while True:
             #se llama la funcion para detectar el color
             color = figColor(maskHSV)
             #se une el tipo de figura y el color para poder mostrarlo
-            nameColor = name + ' ' + color
+            nameColor = name+' ' + color
             #se muestra el texto con la forma y el color
             cv2.putText(imagen,nameColor,(x,y-5),1,1.2,(0,255,0),2)
             #se visualiza la imagen 
             cv2.imshow('imagen',imagen)
+    
             #se espera a que se presione una tecla para seguir el proceso
-            cv2.waitKey(0)
+          
+cap.release()
+cv2.destroyAllWindows()
