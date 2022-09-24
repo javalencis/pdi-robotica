@@ -45,38 +45,28 @@ while True:
             cv2.circle(frame, (x,y), 7, (0,255,0), -1) 
             font = cv2.FONT_HERSHEY_SIMPLEX
             cv2.putText(frame, '{},{}'.format(x,y),(x+50,y), font, 0.75,(0,255,0),1,cv2.LINE_AA)#Mostrar ubicación en la pantalla
-
-            # epsilon = 0.01*cv2.arcLength(c,True)
-            # approx = cv2.approxPolyDP(c,epsilon,True)
-            # x, y, w, h = cv2.boundingRect(c)
-
+            epsilon = 0.01*cv2.arcLength(c,True)
+            approx = cv2.approxPolyDP(c,epsilon,True)
+            print(len(approx))
             
-
-            # cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2) 
-          
-            # print(len(approx))
-            # sumaAzul+=len(approx)
-            # cantAzul+=1
-
-            # promedio = sumaAzul/cantAzul
-   
-       
- 
             # cv2.putText(frame,  ' Azul',(x,y-5),1,1.2,(0,255,0),2)
 
 
     for c in cVerde:
         area = cv2.contourArea(c)
         if area > 2000:
-            x, y, w, h = cv2.boundingRect(c)
             M = cv2.moments(c)
+            
             if (M["m00"] == 0): M["m00"]=1
             x = int(M["m10"]/M["m00"]) #Getting the x coordinate
             y = int((M["m01"] / M["m00"])) 
+           
+            cv2.circle(frame, (x,y), 7, (0,255,0), -1) 
             font = cv2.FONT_HERSHEY_SIMPLEX
-            cv2.putText(frame, '{},{}'.format(x,y),(x,y), font, 0.75,(0,255,0),1,cv2.LINE_AA)
-            cv2.putText(frame, ' Verde',(x,y-5),1,1.2,(0,255,0),2)
-
+            cv2.putText(frame, '{},{}'.format(x,y),(x+50,y), font, 0.75,(0,255,0),1,cv2.LINE_AA)#Mostrar ubicación en la pantalla
+            epsilon = 0.01*cv2.arcLength(c,True)
+            approx = cv2.approxPolyDP(c,epsilon,True)
+            print(len(approx))
     cv2.imshow('frame', frame)
     #cv2.imshow('maskAzul', maskAzul)
     #cv2.imshow('maskVerde', maskVerde)
