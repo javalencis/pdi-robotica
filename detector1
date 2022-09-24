@@ -95,7 +95,7 @@ while True:
             #se muestra el texto con la forma y el color
             cv2.putText(imagen,nameColor,(x,y-5),1,1.2,(0,255,0),2)
             #se visualiza la imagen 
-            cv2.imshow('imagen',imagen)
+            cv2.imshow('imagen',canny)
     
             #se espera a que se presione una tecla para seguir el proceso
           
